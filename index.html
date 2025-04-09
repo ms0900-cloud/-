@@ -54,7 +54,7 @@
 
   <div id="intro">
     <h1>행동경제학 실험 - 가장 좋아하는 간식</h1>
-    <p>최대한 빠르게 고민 없이 선택해주세요!</p>
+    <p>최대한 빠르지만 신중하게 선택해주세요!</p>
     <button onclick="startExperiment()">시작하기</button>
   </div>
 
@@ -64,7 +64,7 @@
   </div>
 
   <div id="step-transition" class="hidden">
-    <p>선택 감사합니다!</p>
+    <p>버튼을 눌러주세요.</p>
     <button onclick="startStepB()">다음을 눌러 계속</button>
   </div>
 
@@ -166,7 +166,7 @@
         timestamp: new Date().toISOString()
       };
 
-      fetch("https://script.google.com/macros/s/AKfycbyb-vk2jFcd6YrlSlh4W0gFcRpwOlHLN00JoDEQk3J0npQlgcY1ChCEyOjaQyaBCDXl/exec", {
+      fetch("https://script.google.com/macros/s/AKfycbzL1rSAI2f44HiusgCmfDIHulWuXyyr35UsL5RZgK6o1_qMrkj-XYSoPetsV9R0MGM/exec", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
