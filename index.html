@@ -19,15 +19,16 @@
       gap: 16px;
       margin: 20px 0;
     }
-    #a-options.image-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-    #b-options.image-grid,
+    #a-options.image-grid,
     #c-options.image-grid {
       grid-template-columns: repeat(3, 1fr);
     }
+    #b-options.image-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
     .image-grid img {
-      width: 80%;
+      width: 90%;
+      max-width: 160px;
       border: 2px solid transparent;
       border-radius: 10px;
       cursor: pointer;
@@ -52,13 +53,16 @@
       font-size: 16px;
       cursor: pointer;
     }
+    .rating input {
+      margin: 0 5px;
+    }
   </style>
 </head>
 <body>
 
   <div id="intro">
     <h1>행동경제학 실험 - 가장 좋아하는 간식</h1>
-    <p>모든 보기를 꼼꼼하게 읽고 선택해주세요</p>
+    <p>최대한 빠르지만 신중하게 선택해주세요!</p>
     <button onclick="startExperiment()">시작하기</button>
   </div>
 
@@ -67,166 +71,192 @@
     <div class="image-grid" id="a-options"></div>
   </div>
 
-  <div id="step-transition" class="hidden">
-    <p>버튼을 눌러주세요.</p>
-    <button onclick="startStepB()">다음을 눌러 계속</button>
-  </div>
-
   <div id="step-b" class="hidden">
     <p>B단계: 아래 간식 중 하나를 선택해주세요.</p>
     <div class="image-grid" id="b-options"></div>
   </div>
 
-  <div id="step-transition-2" class="hidden">
-    <p>버튼을 눌러주세요.</p>
-    <button onclick="startStepC()">다음을 눌러 계속</button>
+  <div id="step-c" class="hidden">
+    <p>C단계: 아래 간식 중 3개를 선택해주세요.</p>
+    <div class="image-grid" id="c-options"></div>
+    <button id="submit-c" class="hidden" onclick="finishExperiment()">선택 완료</button>
   </div>
 
-  <div id="step-c" class="hidden">
-    <p>C단계: 아래 간식 중 <strong>3개</strong>를 선택해주세요.</p>
-    <div class="image-grid" id="c-options"></div>
+  <div id="step-transition" class="hidden">
+    <p>다음 단계로 진행하려면 버튼을 눌러주세요.</p>
+    <button onclick="nextStep()">계속</button>
+  </div>
+
+  <div id="satisfaction" class="hidden">
+    <h2>당신의 선택 결과</h2>
+    <p>A: <span id="result-a"></span></p>
+    <p>B: <span id="result-b"></span></p>
+    <p>C: <span id="result-c"></span></p>
+    <p>이 선택에 얼마나 만족하시나요? (1: 매우 불만족 ~ 5: 매우 만족)</p>
+    <div class="rating">
+      <input type="radio" name="satisfaction" value="1"> 1
+      <input type="radio" name="satisfaction" value="2"> 2
+      <input type="radio" name="satisfaction" value="3"> 3
+      <input type="radio" name="satisfaction" value="4"> 4
+      <input type="radio" name="satisfaction" value="5"> 5
+    </div>
+    <br />
+    <button onclick="showThankYou()">제출</button>
   </div>
 
   <div id="thank-you" class="hidden">
-    <h2>감사합니다!</h2>
-    <p id="result-time"></p>
-    <p id="result-choices"></p>
+    <h2>감사합니다! 실험이 끝났습니다.</h2>
   </div>
 
   <script>
-    const aOptions = [
-      { name: "초코파이", url: "https://img.danawa.com/prod_img/500000/974/546/img/3546974_1.jpg?_v=20250212101544" },
-      { name: "포카칩", url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5roAyQsNk-U2SrvD7u3vfh5Cs__mSVFZm7Q&s" },
-      { name: "오예스", url: "https://img.danawa.com/prod_img/500000/965/117/img/10117965_1.jpg?shrink=360:360&_v=20191210171250" }
+    const allOptions = [
+      "초코파이", "포카칩", "오예스", "새우깡", "고래밥", "초코송이", "빼빼로", "허니버터칩",
+      "콘칩", "죠리퐁", "포스틱", "오감자", "양파링", "나초", "홈런볼"
     ];
 
-    const bOptions = [
-      { name: "새우깡", url: "https://image.nongshim.com/non/pro/1594682430086.jpg" },
-      { name: "고래밥", url: "https://sitem.ssgcdn.com/00/00/98/item/1000291980000_i1_750.jpg" },
-      { name: "초코송이", url: "https://img.danawa.com/prod_img/500000/826/577/img/3577826_1.jpg?_v=20161108161614" },
-      { name: "빼빼로", url: "https://sitem.ssgcdn.com/32/11/49/item/1000264491132_i1_750.jpg" },
-      { name: "허니버터칩", url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqNw1r80dpzmwDTq6B3z6egCDk4WD7vVHKHQ&s" },
-      { name: "콘칩", url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6AftGxD8wDov5Ex-87P4RodjqNhsgsBhe-w&s" },
-      { name: "죠리퐁", url: "https://cphoto.asiae.co.kr/listimglink/1/2023060916485258778_1686296932.jpg" },
-      { name: "포스틱", url: "https://image.nongshim.com/non/pro/product_B.jpg" },
-      { name: "오감자", url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1w26tkveLTSGgx2beAFPAI7Ln-nLvl4Z_3A&s" },
-      { name: "양파링", url: "https://img.danawa.com/prod_img/500000/086/519/img/2519086_1.jpg?_v=20161129160529" },
-      { name: "나초", url: "https://static.megamart.com/product/image/0634/06341961/06341961_1_960.jpg" },
-      { name: "홈런볼", url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0uw5bcY3H9DfTeewaDGi3l-a-gtHf4VDZJg&s" }
-    ];
+    const images = {
+      "초코파이": "https://img.danawa.com/prod_img/500000/974/546/img/3546974_1.jpg?_v=20250212101544",
+      "포카칩": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5roAyQsNk-U2SrvD7u3vfh5Cs__mSVFZm7Q&s",
+      "오예스": "https://img.danawa.com/prod_img/500000/965/117/img/10117965_1.jpg?shrink=360:360&_v=20191210171250",
+      "새우깡": "https://image.nongshim.com/non/pro/1594682430086.jpg",
+      "고래밥": "https://sitem.ssgcdn.com/00/00/98/item/1000291980000_i1_750.jpg",
+      "초코송이": "https://img.danawa.com/prod_img/500000/826/577/img/3577826_1.jpg?_v=20161108161614",
+      "빼빼로": "https://sitem.ssgcdn.com/32/11/49/item/1000264491132_i1_750.jpg",
+      "허니버터칩": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqNw1r80dpzmwDTq6B3z6egCDk4WD7vVHKHQ&s",
+      "콘칩": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6AftGxD8wDov5Ex-87P4RodjqNhsgsBhe-w&s",
+      "죠리퐁": "https://cphoto.asiae.co.kr/listimglink/1/2023060916485258778_1686296932.jpg",
+      "포스틱": "https://image.nongshim.com/non/pro/product_B.jpg",
+      "오감자": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1w26tkveLTSGgx2beAFPAI7Ln-nLvl4Z_3A&s",
+      "양파링": "https://img.danawa.com/prod_img/500000/086/519/img/2519086_1.jpg?_v=20161129160529",
+      "나초": "https://static.megamart.com/product/image/0634/06341961/06341961_1_960.jpg",
+      "홈런볼": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0uw5bcY3H9DfTeewaDGi3l-a-gtHf4VDZJg&s"
+    };
 
-    let aStart, bStart, cStart;
-    let aChoice, bChoice, cChoices = [];
+    let stepOrder = [];
+    let currentStep = 0;
+    let selected = { A: null, B: null, C: [] };
+    let shownOptions = { A: [], B: [], C: [] };
+
+    function shuffle(array) {
+      return array.sort(() => 0.5 - Math.random());
+    }
 
     function startExperiment() {
+      stepOrder = shuffle(["A", "B", "C"]);
+      currentStep = 0;
       document.getElementById("intro").classList.add("hidden");
-      showStepA();
+      runStep();
+    }
+
+    function runStep() {
+      const step = stepOrder[currentStep];
+      if (step === "A") showStepA();
+      if (step === "B") showStepB();
+      if (step === "C") showStepC();
+    }
+
+    function nextStep() {
+      document.getElementById("step-transition").classList.add("hidden");
+      currentStep++;
+      runStep();
     }
 
     function showStepA() {
       const container = document.getElementById("a-options");
       container.innerHTML = "";
-      const shuffled = [...aOptions].sort(() => 0.5 - Math.random());
-      shuffled.forEach(option => {
-        const wrapper = document.createElement("div");
+      const options = shuffle(allOptions).slice(0, 3);
+      shownOptions.A = options;
+      options.forEach(name => {
+        const div = document.createElement("div");
         const img = document.createElement("img");
+        img.src = images[name];
+        img.onclick = () => {
+          selected.A = name;
+          document.getElementById("step-a").classList.add("hidden");
+          document.getElementById("step-transition").classList.remove("hidden");
+        };
         const label = document.createElement("div");
-        img.src = option.url;
-        img.onclick = () => selectA(option.name);
         label.className = "label";
-        label.innerText = option.name;
-        wrapper.appendChild(img);
-        wrapper.appendChild(label);
-        container.appendChild(wrapper);
+        label.innerText = name;
+        div.appendChild(img);
+        div.appendChild(label);
+        container.appendChild(div);
       });
       document.getElementById("step-a").classList.remove("hidden");
-      aStart = Date.now();
     }
 
-    function selectA(name) {
-      const aTime = Date.now() - aStart;
-      aChoice = name;
-      document.getElementById("step-a").classList.add("hidden");
-      document.getElementById("step-transition").classList.remove("hidden");
-      window._tempAData = { aChoice: name, aTime };
-    }
-
-    function startStepB() {
-      document.getElementById("step-transition").classList.add("hidden");
+    function showStepB() {
       const container = document.getElementById("b-options");
       container.innerHTML = "";
-      const filtered = bOptions.filter(opt => opt.name !== aChoice);
-      const shuffled = [...filtered].sort(() => 0.5 - Math.random()).slice(0, 9);
-      shuffled.forEach(option => {
-        const wrapper = document.createElement("div");
+      const excluded = new Set([selected.A]);
+      const options = shuffle(allOptions.filter(n => !excluded.has(n))).slice(0, 9);
+      shownOptions.B = options;
+      options.forEach(name => {
+        const div = document.createElement("div");
         const img = document.createElement("img");
+        img.src = images[name];
+        img.onclick = () => {
+          selected.B = name;
+          document.getElementById("step-b").classList.add("hidden");
+          document.getElementById("step-transition").classList.remove("hidden");
+        };
         const label = document.createElement("div");
-        img.src = option.url;
-        img.onclick = () => selectB(option.name);
         label.className = "label";
-        label.innerText = option.name;
-        wrapper.appendChild(img);
-        wrapper.appendChild(label);
-        container.appendChild(wrapper);
+        label.innerText = name;
+        div.appendChild(img);
+        div.appendChild(label);
+        container.appendChild(div);
       });
       document.getElementById("step-b").classList.remove("hidden");
-      bStart = Date.now();
     }
 
-    function selectB(name) {
-      const bTime = Date.now() - bStart;
-      bChoice = name;
-      document.getElementById("step-b").classList.add("hidden");
-      document.getElementById("step-transition-2").classList.remove("hidden");
-      window._tempBData = { bChoice: name, bTime };
-    }
-
-    function startStepC() {
-      document.getElementById("step-transition-2").classList.add("hidden");
-      const excluded = [aChoice, bChoice];
-      const options = [...aOptions, ...bOptions]
-        .filter(opt => !excluded.includes(opt.name));
-      const shuffled = [...options].sort(() => 0.5 - Math.random()).slice(0, 12);
-
+    function showStepC() {
       const container = document.getElementById("c-options");
       container.innerHTML = "";
-      shuffled.forEach(option => {
-        const wrapper = document.createElement("div");
+      const excluded = new Set([selected.A, selected.B, ...shownOptions.A, ...shownOptions.B]);
+      const options = shuffle(allOptions.filter(n => !excluded.has(n))).slice(0, 12);
+      shownOptions.C = options;
+      const selectedSet = new Set();
+
+      options.forEach(name => {
+        const div = document.createElement("div");
         const img = document.createElement("img");
+        img.src = images[name];
+        img.onclick = () => {
+          if (selectedSet.has(name)) {
+            selectedSet.delete(name);
+            img.classList.remove("selected");
+          } else if (selectedSet.size < 3) {
+            selectedSet.add(name);
+            img.classList.add("selected");
+          }
+          document.getElementById("submit-c").classList.toggle("hidden", selectedSet.size !== 3);
+        };
         const label = document.createElement("div");
-        img.src = option.url;
-        img.onclick = () => toggleCSelection(option.name, img);
         label.className = "label";
-        label.innerText = option.name;
-        wrapper.appendChild(img);
-        wrapper.appendChild(label);
-        container.appendChild(wrapper);
+        label.innerText = name;
+        div.appendChild(img);
+        div.appendChild(label);
+        container.appendChild(div);
       });
+
       document.getElementById("step-c").classList.remove("hidden");
-      cStart = Date.now();
     }
 
-    function toggleCSelection(name, img) {
-      const index = cChoices.indexOf(name);
-      if (index === -1) {
-        if (cChoices.length >= 3) return;
-        cChoices.push(name);
-        img.classList.add("selected");
-      } else {
-        cChoices.splice(index, 1);
-        img.classList.remove("selected");
-      }
+    function finishExperiment() {
+      selected.C = Array.from(document.querySelectorAll("#c-options img.selected")).map(img =>
+        img.nextSibling.innerText
+      );
+      document.getElementById("step-c").classList.add("hidden");
+      document.getElementById("result-a").innerText = selected.A || "(선택 없음)";
+      document.getElementById("result-b").innerText = selected.B || "(선택 없음)";
+      document.getElementById("result-c").innerText = selected.C.join(", ") || "(선택 없음)";
+      document.getElementById("satisfaction").classList.remove("hidden");
+    }
 
-      if (cChoices.length === 3) {
-        const cTime = Date.now() - cStart;
-        document.getElementById("step-c").classList.add("hidden");
-        document.getElementById("thank-you").classList.remove("hidden");
-
-        document.getElementById("result-time").innerText =
-          `소요 시간: A단계 ${window._tempAData.aTime}ms, B단계 ${window._tempBData.bTime}ms, C단계 ${cTime}ms`;
-        document.getElementById("result-choices").innerText =
-          `선택: A - ${aChoice}, B - ${bChoice}, C - ${cChoices.join(", ")}`;
-      }
+    function showThankYou() {
+      document.getElementById("satisfaction").classList.add("hidden");
+      document.getElementById("thank-you").classList.remove("hidden");
     }
   </script>
 </body>
