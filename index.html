@@ -57,13 +57,11 @@
   <div id="step-a" class="hidden">
     <p>A단계: 아래 간식 중 하나를 선택해주세요.</p>
     <div class="image-grid" id="a-options"></div>
-    <button onclick="proceedToB()" class="hidden" id="a-next">다음</button>
   </div>
 
   <div id="step-b" class="hidden">
     <p>B단계: 아래 간식 중 하나를 선택해주세요.</p>
     <div class="image-grid" id="b-options"></div>
-    <button onclick="proceedToC()" class="hidden" id="b-next">다음</button>
   </div>
 
   <div id="step-c" class="hidden">
@@ -126,8 +124,8 @@
         img.onclick = () => {
           aChoice = snack;
           timeA = Date.now() - startTime;
-          document.getElementById("a-next").classList.remove("hidden");
           selectOne(container, img);
+          setTimeout(proceedToB, 300);
         };
         const label = document.createElement("div");
         label.innerText = snack;
@@ -153,8 +151,8 @@
         img.onclick = () => {
           bChoice = snack;
           timeB = Date.now() - startTime;
-          document.getElementById("b-next").classList.remove("hidden");
           selectOne(container, img);
+          setTimeout(proceedToC, 300);
         };
         const label = document.createElement("div");
         label.innerText = snack;
