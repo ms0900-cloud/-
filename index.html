@@ -116,8 +116,7 @@
     function showStepA() {
       const container = document.getElementById("a-options");
       container.innerHTML = "";
-      const shuffled = [...allOptions].sort(() => 0.5 - Math.random()).slice(0, 9);
-      shuffled.forEach(snack => {
+      const shuffled = [...aOptions].sort(() => 0.5 - Math.random()).slice(0, 3);
         const div = document.createElement("div");
         const img = document.createElement("img");
         img.src = imageMap[snack];
