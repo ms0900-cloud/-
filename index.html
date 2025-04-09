@@ -11,7 +11,7 @@
       background: #f9f9f9;
       text-align: center;
     }
-    h1, h2 {
+    h1 {
       font-weight: bold;
     }
     .image-grid {
@@ -22,15 +22,12 @@
     #a-options.image-grid {
       grid-template-columns: repeat(3, 1fr);
     }
-    #a-options img {
-      width: 80%; /* 크기 조정 */
-    }
     #b-options.image-grid,
     #c-options.image-grid {
       grid-template-columns: repeat(3, 1fr);
     }
     .image-grid img {
-      width: 100%;
+      width: 80%;
       border: 2px solid transparent;
       border-radius: 10px;
       cursor: pointer;
@@ -61,7 +58,7 @@
 
   <div id="intro">
     <h1>행동경제학 실험 - 가장 좋아하는 간식</h1>
-    <p>최대한 빠르지만 신중하게 선택해주세요!</p>
+    <p>모든 보기를 꼼꼼하게 읽고 선택해주세요</p>
     <button onclick="startExperiment()">시작하기</button>
   </div>
 
@@ -80,15 +77,20 @@
     <div class="image-grid" id="b-options"></div>
   </div>
 
+  <div id="step-transition-2" class="hidden">
+    <p>버튼을 눌러주세요.</p>
+    <button onclick="startStepC()">다음을 눌러 계속</button>
+  </div>
+
   <div id="step-c" class="hidden">
-    <p>C단계: 아래 간식 중 **3개**를 선택해주세요.</p>
+    <p>C단계: 아래 간식 중 <strong>3개</strong>를 선택해주세요.</p>
     <div class="image-grid" id="c-options"></div>
-    <button id="confirm-c" class="hidden" onclick="finishExperiment()">선택 완료</button>
   </div>
 
   <div id="thank-you" class="hidden">
     <h2>감사합니다!</h2>
     <p id="result-time"></p>
+    <p id="result-choices"></p>
   </div>
 
   <script>
@@ -154,7 +156,7 @@
       const container = document.getElementById("b-options");
       container.innerHTML = "";
       const filtered = bOptions.filter(opt => opt.name !== aChoice);
-      const shuffled = [...filtered].sort(() => 0.5 - Math.random());
+      const shuffled = [...filtered].sort(() => 0.5 - Math.random()).slice(0, 9);
       shuffled.forEach(option => {
         const wrapper = document.createElement("div");
         const img = document.createElement("img");
@@ -175,22 +177,25 @@
       const bTime = Date.now() - bStart;
       bChoice = name;
       document.getElementById("step-b").classList.add("hidden");
-      showStepC();
-      window._tempAData.bChoice = name;
-      window._tempAData.bTime = bTime;
+      document.getElementById("step-transition-2").classList.remove("hidden");
+      window._tempBData = { bChoice: name, bTime };
     }
 
-    function showStepC() {
+    function startStepC() {
+      document.getElementById("step-transition-2").classList.add("hidden");
+      const excluded = [aChoice, bChoice];
+      const options = [...aOptions, ...bOptions]
+        .filter(opt => !excluded.includes(opt.name));
+      const shuffled = [...options].sort(() => 0.5 - Math.random()).slice(0, 12);
+
       const container = document.getElementById("c-options");
       container.innerHTML = "";
-      const filtered = bOptions.filter(opt => opt.name !== aChoice && opt.name !== bChoice);
-      const shuffled = [...filtered].sort(() => 0.5 - Math.random());
       shuffled.forEach(option => {
         const wrapper = document.createElement("div");
         const img = document.createElement("img");
         const label = document.createElement("div");
         img.src = option.url;
-        img.onclick = () => toggleC(option.name, img);
+        img.onclick = () => toggleCSelection(option.name, img);
         label.className = "label";
         label.innerText = option.name;
         wrapper.appendChild(img);
@@ -201,29 +206,27 @@
       cStart = Date.now();
     }
 
-    function toggleC(name, img) {
-      if (cChoices.includes(name)) {
-        cChoices = cChoices.filter(n => n !== name);
-        img.classList.remove("selected");
-      } else {
+    function toggleCSelection(name, img) {
+      const index = cChoices.indexOf(name);
+      if (index === -1) {
         if (cChoices.length >= 3) return;
         cChoices.push(name);
         img.classList.add("selected");
+      } else {
+        cChoices.splice(index, 1);
+        img.classList.remove("selected");
       }
-      document.getElementById("confirm-c").classList.toggle("hidden", cChoices.length !== 3);
-    }
 
-    function finishExperiment() {
-      const timeC = Date.now() - cStart;
-      const totalTime = window._tempAData.aTime + window._tempAData.bTime + timeC;
-      document.getElementById("step-c").classList.add("hidden");
-      document.getElementById("thank-you").classList.remove("hidden");
-      document.getElementById("result-time").innerHTML = `
-        A단계 시간: ${window._tempAData.aTime}ms<br>
-        B단계 시간: ${window._tempAData.bTime}ms<br>
-        C단계 시간: ${timeC}ms<br>
-        총 소요 시간: ${totalTime}ms
-      `;
+      if (cChoices.length === 3) {
+        const cTime = Date.now() - cStart;
+        document.getElementById("step-c").classList.add("hidden");
+        document.getElementById("thank-you").classList.remove("hidden");
+
+        document.getElementById("result-time").innerText =
+          `소요 시간: A단계 ${window._tempAData.aTime}ms, B단계 ${window._tempBData.bTime}ms, C단계 ${cTime}ms`;
+        document.getElementById("result-choices").innerText =
+          `선택: A - ${aChoice}, B - ${bChoice}, C - ${cChoices.join(", ")}`;
+      }
     }
   </script>
 </body>
