@@ -11,7 +11,7 @@
       background: #f9f9f9;
       text-align: center;
     }
-    h1 {
+    h1, h2 {
       font-weight: bold;
     }
     .image-grid {
@@ -19,7 +19,14 @@
       gap: 16px;
       margin: 20px 0;
     }
-    #b-options.image-grid {
+    #a-options.image-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    #a-options img {
+      width: 80%; /* 크기 조정 */
+    }
+    #b-options.image-grid,
+    #c-options.image-grid {
       grid-template-columns: repeat(3, 1fr);
     }
     .image-grid img {
@@ -73,8 +80,15 @@
     <div class="image-grid" id="b-options"></div>
   </div>
 
+  <div id="step-c" class="hidden">
+    <p>C단계: 아래 간식 중 **3개**를 선택해주세요.</p>
+    <div class="image-grid" id="c-options"></div>
+    <button id="confirm-c" class="hidden" onclick="finishExperiment()">선택 완료</button>
+  </div>
+
   <div id="thank-you" class="hidden">
     <h2>감사합니다!</h2>
+    <p id="result-time"></p>
   </div>
 
   <script>
@@ -99,7 +113,8 @@
       { name: "홈런볼", url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0uw5bcY3H9DfTeewaDGi3l-a-gtHf4VDZJg&s" }
     ];
 
-    let aStart, bStart, aChoice;
+    let aStart, bStart, cStart;
+    let aChoice, bChoice, cChoices = [];
 
     function startExperiment() {
       document.getElementById("intro").classList.add("hidden");
@@ -158,22 +173,57 @@
 
     function selectB(name) {
       const bTime = Date.now() - bStart;
-      const data = {
-        aChoice: window._tempAData.aChoice,
-        bChoice: name,
-        timeA: window._tempAData.aTime,
-        timeB: bTime,
-        timestamp: new Date().toISOString()
-      };
-
-      fetch("https://script.google.com/macros/s/AKfycbxoryhsqtlR-II5DnNzPWFVKheqse73lMvZgonqeMsFlNWP97OybtMgMwOM47U0fylg/exec", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-
+      bChoice = name;
       document.getElementById("step-b").classList.add("hidden");
+      showStepC();
+      window._tempAData.bChoice = name;
+      window._tempAData.bTime = bTime;
+    }
+
+    function showStepC() {
+      const container = document.getElementById("c-options");
+      container.innerHTML = "";
+      const filtered = bOptions.filter(opt => opt.name !== aChoice && opt.name !== bChoice);
+      const shuffled = [...filtered].sort(() => 0.5 - Math.random());
+      shuffled.forEach(option => {
+        const wrapper = document.createElement("div");
+        const img = document.createElement("img");
+        const label = document.createElement("div");
+        img.src = option.url;
+        img.onclick = () => toggleC(option.name, img);
+        label.className = "label";
+        label.innerText = option.name;
+        wrapper.appendChild(img);
+        wrapper.appendChild(label);
+        container.appendChild(wrapper);
+      });
+      document.getElementById("step-c").classList.remove("hidden");
+      cStart = Date.now();
+    }
+
+    function toggleC(name, img) {
+      if (cChoices.includes(name)) {
+        cChoices = cChoices.filter(n => n !== name);
+        img.classList.remove("selected");
+      } else {
+        if (cChoices.length >= 3) return;
+        cChoices.push(name);
+        img.classList.add("selected");
+      }
+      document.getElementById("confirm-c").classList.toggle("hidden", cChoices.length !== 3);
+    }
+
+    function finishExperiment() {
+      const timeC = Date.now() - cStart;
+      const totalTime = window._tempAData.aTime + window._tempAData.bTime + timeC;
+      document.getElementById("step-c").classList.add("hidden");
       document.getElementById("thank-you").classList.remove("hidden");
+      document.getElementById("result-time").innerHTML = `
+        A단계 시간: ${window._tempAData.aTime}ms<br>
+        B단계 시간: ${window._tempAData.bTime}ms<br>
+        C단계 시간: ${timeC}ms<br>
+        총 소요 시간: ${totalTime}ms
+      `;
     }
   </script>
 </body>
