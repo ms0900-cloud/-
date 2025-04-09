@@ -165,10 +165,12 @@
         timeB: bTime,
         timestamp: new Date().toISOString()
       };
-      fetch("https://script.google.com/macros/s/AKfycbyYUmV3Ubo9n2OzPUY1yNFWIS42LWSJcKpn-KcEUM1OVgJG0xrNks6jsivc_GRp7VVt/exec", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+     fetch("https://script.google.com/macros/s/AKfycbyb-vk2jFcd6YrlSlh4W0gFcRpwOlHLN00JoDEQk3J0npQlgcY1ChCEyOjaQyaBCDXl/exec", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(data)
+});
+
       });
       document.getElementById("step-b").classList.add("hidden");
       document.getElementById("thank-you").classList.remove("hidden");
