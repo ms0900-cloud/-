@@ -114,28 +114,30 @@
     }
 
     function showStepA() {
-      const container = document.getElementById("a-options");
-      container.innerHTML = "";
-      const shuffled = [...aOptions].sort(() => 0.5 - Math.random()).slice(0, 3);
-        const div = document.createElement("div");
-        const img = document.createElement("img");
-        img.src = imageMap[snack];
-        img.onclick = () => {
-          aChoice = snack;
-          timeA = Date.now() - startTime;
-          selectOne(container, img);
-          setTimeout(proceedToB, 300);
-        };
-        const label = document.createElement("div");
-        label.innerText = snack;
-        label.className = "label";
-        div.appendChild(img);
-        div.appendChild(label);
-        container.appendChild(div);
-      });
-      document.getElementById("step-a").classList.remove("hidden");
-      startTime = Date.now();
-    }
+  const container = document.getElementById("a-options");
+  container.innerHTML = "";
+  const shuffled = [...allOptions].sort(() => 0.5 - Math.random()).slice(0, 3);
+  shuffled.forEach(snack => {
+    const div = document.createElement("div");
+    const img = document.createElement("img");
+    img.src = imageMap[snack];
+    img.onclick = () => {
+      aChoice = snack;
+      timeA = Date.now() - startTime;
+      selectOne(container, img);
+      setTimeout(proceedToB, 300);
+    };
+    const label = document.createElement("div");
+    label.innerText = snack;
+    label.className = "label";
+    div.appendChild(img);
+    div.appendChild(label);
+    container.appendChild(div);
+  });
+  document.getElementById("step-a").classList.remove("hidden");
+  startTime = Date.now();
+}
+
 
     function proceedToB() {
       document.getElementById("step-a").classList.add("hidden");
